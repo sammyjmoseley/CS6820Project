@@ -50,19 +50,21 @@ class TreeApproximator(object):
 
     def _distance_dict(self, node_list):
         dict = {}
-        dists = nx.floyd_warshall_numpy(self.G, node_list)
+        dists = nx.floyd_warshall_numpy(self.G, node_list).tolist()
 
         for i in range(0, len(node_list)):
-            if i not in dict:
+            if node_list[i] not in dict:
                 dict[node_list[i]] = {}
-            for j in range(0, i + 1):
+            for j in range(0, i):
+                if node_list[j] not in dict:
+                    dict[node_list[j]] = {}
                 dict[node_list[i]][node_list[j]] = dists[i][j]
                 dict[node_list[j]][node_list[i]] = dists[j][i]
         return dists
 
     def _create_spanning_tree_approx(self) -> ComTreeNode:
         pi = self.G.nodes()
-        pi = random.shuffle(pi)
+        random.shuffle(pi)
         node_dists = self._distance_dict(pi)
 
         beta = _beta()
