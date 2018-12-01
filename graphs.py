@@ -12,21 +12,9 @@ def cycle(n):
     return nx.cycle_graph(n)
 
 
-def eamil_graph():
+def load_graph(name):
     dg = nx.DiGraph()
-    with open("data/email-Eu-core.txt", "r") as f:
-        content = f.readlines()
-        for line in content:
-            vertices = line.split()
-            a = int(vertices[0])
-            b = int(vertices[1])
-            dg.add_edge(a,b, weight=1)
-    return dg
-
-
-def road_graph():
-    dg = nx.DiGraph()
-    with open("data/roadNet-CA.txt", "r") as f:
+    with open("data/"+name, "r") as f:
         content = f.readlines()
         for line in content:
             if line[0] == "#":
@@ -38,6 +26,16 @@ def road_graph():
     return dg
 
 
+def email_graph():
+    return load_graph("email-Eu-core.txt")
+
+def road_graph():
+    return load_graph("roadNet-CA.txt")
+
+def collab_graph():
+    return load_graph("ca-HepTh.txt")
+
+
 def visualize(g):
     plt.figure()
     nx.draw_networkx(g)
@@ -45,5 +43,5 @@ def visualize(g):
 
 
 if __name__ == "__main__":
-    visualize(eamil_graph())
+    visualize(email_graph())
 
