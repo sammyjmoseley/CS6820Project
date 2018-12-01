@@ -20,9 +20,9 @@ def eamil_graph():
             vertices = line.strip().split(" ")
             a = int(vertices[0])
             b = int(vertices[1])
-
-            dg.add_edge(a,b, weight=1)
-    return dg
+            if a != b:
+                dg.add_edge(a,b, weight=1)
+    return dg.to_undirected()
 
 
 def visualize(g):
