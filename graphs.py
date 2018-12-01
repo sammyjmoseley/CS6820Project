@@ -17,12 +17,25 @@ def eamil_graph():
     with open("data/email-Eu-core.txt", "r") as f:
         content = f.readlines()
         for line in content:
-            vertices = line.strip().split(" ")
+            vertices = line.split()
             a = int(vertices[0])
             b = int(vertices[1])
-            if a != b:
-                dg.add_edge(a,b, weight=1)
-    return dg.to_undirected()
+            dg.add_edge(a,b, weight=1)
+    return dg
+
+
+def road_graph():
+    dg = nx.DiGraph()
+    with open("data/roadNet-CA.txt", "r") as f:
+        content = f.readlines()
+        for line in content:
+            if line[0] == "#":
+                continue
+            vertices = line.split()
+            a = int(vertices[0])
+            b = int(vertices[1])
+            dg.add_edge(a,b, weight=1)
+    return dg
 
 
 def visualize(g):
@@ -32,6 +45,5 @@ def visualize(g):
 
 
 if __name__ == "__main__":
-
     visualize(eamil_graph())
 
