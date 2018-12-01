@@ -40,7 +40,7 @@ def _create_tree_helper(counter, laminar_family, betas, set, i) -> List[ComTreeN
 
 def create_tree_from_laminar_family(laminar_family, betas) -> ComTreeNode:
     counter = [0 for _ in range(len(laminar_family))]
-    return _create_tree_helper(counter, laminar_family, betas, laminar_family[0][0], 0)[0]
+    return _create_tree_helper(counter, laminar_family, betas, laminar_family[-1][0], 0)[0]
 
 
 class TreeApproximator(object):
@@ -48,51 +48,55 @@ class TreeApproximator(object):
         self.G = G
         self.spanning_tree_aprox: ComTreeNode = self._create_spanning_tree_approx()
 
-    def _distance_dict(self, node_list):
-        dict = {}
+    def _distance_dict(self, node_list) -> Dict[int, Dict[int, float]]:
+        dict : Dict[int, Dict[int, int]] = {}
         dists = nx.floyd_warshall_numpy(self.G, node_list).tolist()
 
         for i in range(0, len(node_list)):
             if node_list[i] not in dict:
                 dict[node_list[i]] = {}
+            dict[node_list[i]][node_list[i]] = 0.0
             for j in range(0, i):
                 if node_list[j] not in dict:
                     dict[node_list[j]] = {}
                 dict[node_list[i]][node_list[j]] = dists[i][j]
                 dict[node_list[j]][node_list[i]] = dists[j][i]
-        return dists
+        return dict
 
     def _create_spanning_tree_approx(self) -> ComTreeNode:
-        pi = self.G.nodes()
+        pi = list(self.G.nodes())
         random.shuffle(pi)
         node_dists = self._distance_dict(pi)
 
         beta = _beta()
-
         diameter = max(map(lambda x: max(x.values()), node_dists.values()))
-
+        print(diameter)
         delta = np.log2(diameter)
+        delta = int(delta)
 
-        D = [[] for _ in range(0, delta)]
+        D = [[] for _ in range(0, delta+1)]
         betas = []
 
-        i = delta - 1
+        i = delta-1
 
-        D[i] = pi
+        D[i+1] = [pi]
         betas.append(np.power(2.0, delta) * beta)
-        while max(map(len, D[delta])) > 1:
-            beta_i = np.power(2.0, i) * beta
+        while max(map(len, D[i+1])) > 1:
+            beta_i = np.power(2.0, i-1) * beta
             betas.append(beta_i)
             nodes = []
             for l in range(0, len(pi)):
-                for cluster in D[i]:
+                for cluster in D[i+1]:
                     append_nodes = filter(lambda x: x not in nodes, cluster)
+                    append_nodes = list(append_nodes)
                     append_nodes = filter(lambda x: node_dists[x][pi[l]] < beta_i, append_nodes)
+                    append_nodes = list(append_nodes)
                     nodes.extend(append_nodes)
 
-                    D[i - 1].append(append_nodes)
+                    D[i].append(append_nodes)
 
             i -= 1
+        D = D[i+1:]
         return create_tree_from_laminar_family(D, betas)
 
     def _get_approx_dist(self, a, b):
@@ -111,16 +115,21 @@ class TreeApproximator(object):
 
 
 if __name__ == "__main__":
-    laminar_families = [
-        [['a', 'b', 'c']],
-        [['a'], ['b', 'c']],
-        [['a'], ['b'], ['c']]
-    ]
-    betas = [
-        1,
-        2,
-        3
-    ]
+    # laminar_families = [
+    #     [['a', 'b', 'c']],
+    #     [['a'], ['b', 'c']],
+    #     [['a'], ['b'], ['c']]
+    # ]
+    # betas = [
+    #     1,
+    #     2,
+    #     3
+    # ]
+    #
+    # tree = create_tree_from_laminar_family(laminar_families, betas)
+    # print(tree)
 
-    tree = create_tree_from_laminar_family(laminar_families, betas)
-    print(tree)
+    g = nx.cycle_graph(10)
+    # nx.draw_networkx(g)
+
+    approx = TreeApproximator(g)
