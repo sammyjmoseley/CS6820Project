@@ -19,7 +19,11 @@ pdf /= np.log(2)
 def _beta():
     return np.random.choice(intervals, p=pdf)
 
-
+def _beta_2():
+    l_2 = np.log(2)
+    x = np.random.random_sample()
+    x = np.exp(x*l_2)
+    return x
 
 class ComTreeNode:
     def __init__(self, elems, beta, children=None):
