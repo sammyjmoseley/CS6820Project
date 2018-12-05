@@ -39,9 +39,14 @@ def collab_graph():
 def visualize(g):
     plt.figure()
     nx.draw_networkx(g)
-    plt.show()
 
 
 if __name__ == "__main__":
-    visualize(email_graph())
+    g = email_graph()
+    visualize(g)
+    g_ = TreeApproximator(g).spanning_tree_aprox
+    visualize(g_)
+    plt.show()
+
+
 
