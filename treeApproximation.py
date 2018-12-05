@@ -4,13 +4,21 @@ import random
 from typing import Dict, Optional, List
 
 
-def _beta():
+def _beta_bad():
     l_2 = np.log2(2)
     l_2_inv = 1 / l_2
     x = np.random.random_sample()
     x = l_2_inv * x + l_2_inv
     x = 1 / (x * l_2)
-    return x
+    return x + 1
+delta = 0.01
+intervals = np.arange(1, 2, delta)
+pdf = np.log(intervals+delta) - np.log(intervals)
+pdf /= np.log(2)
+
+def _beta():
+    return np.random.choice(intervals, p=pdf)
+
 
 
 class ComTreeNode:
@@ -24,8 +32,11 @@ class ComTreeNode:
 
     def _to_nx_graph_helper(self, origG: nx.Graph, aproxG: nx.Graph, c: List[int], parent: Optional[int]):
         this_node = c[0]
-        sub_graph: nx.Graph = origG.subgraph(self.elems)
-        aproxG.add_node(c[0], elems=self.elems, diam=nx.diameter(sub_graph)) # add diameter for sub graphs
+        diam = 1
+        if origG is not None:
+            sub_graph: nx.Graph = origG.subgraph(self.elems)
+            diam = nx.diameter(sub_graph)
+        aproxG.add_node(c[0], elems=self.elems, diam=diam) # add diameter for sub graphs
         c[0] += 1
         if parent is not None:
             aproxG.add_edge(this_node, parent)
@@ -33,7 +44,7 @@ class ComTreeNode:
             for child in self.children:
                 child._to_nx_graph_helper(origG, aproxG, c, this_node)
 
-    def to_nx_graph(self, origG: nx.Graph):
+    def to_nx_graph(self, origG: nx.Graph=None):
         g = nx.Graph()
         c = [0]
         self._to_nx_graph_helper(origG, g, c, None)
@@ -62,7 +73,10 @@ def create_tree_from_laminar_family(laminar_family, betas) -> ComTreeNode:
 
 class TreeApproximator(object):
     def __init__(self, G: nx.Graph):
-        self.G = G
+        G = G.to_undirected()
+        connected_components = list(map(G.subgraph, sorted(nx.connected_components(G), key=len, reverse=True)))
+        largest_component = connected_components[0]
+        self.G = largest_component
         self.spanning_tree_aprox: nx.Graph = self._create_spanning_tree_approx().to_nx_graph(G)
 
     def _distance_dict(self, node_list) -> Dict[int, Dict[int, float]]:
@@ -86,6 +100,7 @@ class TreeApproximator(object):
         node_dists = self._distance_dict(pi)
 
         beta = _beta()
+        print("Beta: %s" % (beta,))
         diameter = max(map(lambda x: max(x.values()), node_dists.values()))
         print(diameter)
         delta = np.log2(diameter)
@@ -114,6 +129,8 @@ class TreeApproximator(object):
 
             i -= 1
         D = D[i+1:]
+        D.reverse()
+        print("Depth of tree %s" % (len(D)))
         return create_tree_from_laminar_family(D, betas)
 
     def _get_approx_dist(self, a, b):
@@ -146,7 +163,9 @@ if __name__ == "__main__":
     # tree = create_tree_from_laminar_family(laminar_families, betas)
     # print(tree)
 
-    g = nx.cycle_graph(10)
+    # g = nx.cycle_graph(10)
     # nx.draw_networkx(g)
 
-    approx = TreeApproximator(g)
+    # approx = TreeApproximator(g)
+
+    print(_beta())

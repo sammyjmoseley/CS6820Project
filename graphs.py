@@ -1,6 +1,6 @@
 import numpy as np
 import networkx as nx
-from treeApproximation import TreeApproximator
+from treeApproximation import TreeApproximator, ComTreeNode, create_tree_from_laminar_family
 import matplotlib.pyplot as plt
 
 def random_graph(n):
