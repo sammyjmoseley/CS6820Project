@@ -46,17 +46,13 @@ def visualize(g, labels = None):
 
 if __name__ == "__main__":
 
-    # edge label example
-    g = random_graph(10)
+    g = email_graph()
     visualize(g)
-    dic = dict(zip(g.edges(), [1] * len(g.edges())))
-    visualize(g, labels = dic)
-
-    # tree approx example
-    #g = email_graph()
-    #visualize(g)
-    #g_ = TreeApproximator(g).spanning_tree_aprox
-    #visualize(g_)
+    g_ = TreeApproximator(g).spanning_tree_aprox
+    dic = {}
+    for a, b, data in g_.edges(data = True):
+        dic[(a,b)]= data['dist']
+    visualize(g_, labels = dic)
     plt.show()
 
 

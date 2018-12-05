@@ -43,7 +43,8 @@ class ComTreeNode:
         aproxG.add_node(c[0], elems=self.elems, diam=diam) # add diameter for sub graphs
         c[0] += 1
         if parent is not None:
-            aproxG.add_edge(this_node, parent)
+            idx, attrs = aproxG.nodes(data = True)[parent]
+            aproxG.add_edge(this_node, parent, dist = attrs['diam'])
         if self.children is not None:
             for child in self.children:
                 child._to_nx_graph_helper(origG, aproxG, c, this_node)
