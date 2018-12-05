@@ -36,16 +36,27 @@ def collab_graph():
     return load_graph("ca-HepTh.txt")
 
 
-def visualize(g):
+def visualize(g, labels = None):
     plt.figure()
-    nx.draw_networkx(g)
+    pos = nx.spring_layout(G = g, dim = 2, k = 10, scale=20)
+    nx.draw_networkx(g, pos)
+    if labels != None:
+      nx.draw_networkx_edge_labels(g, pos, labels)
 
 
 if __name__ == "__main__":
-    g = email_graph()
+
+    # edge label example
+    g = random_graph(10)
     visualize(g)
-    g_ = TreeApproximator(g).spanning_tree_aprox
-    visualize(g_)
+    dic = dict(zip(g.edges(), [1] * len(g.edges())))
+    visualize(g, labels = dic)
+
+    # tree approx example
+    #g = email_graph()
+    #visualize(g)
+    #g_ = TreeApproximator(g).spanning_tree_aprox
+    #visualize(g_)
     plt.show()
 
 
