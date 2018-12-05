@@ -22,6 +22,23 @@ class ComTreeNode:
     def is_leaf(self) -> bool:
         return self.children is None
 
+    def _to_nx_graph_helper(self, origG: nx.Graph, aproxG: nx.Graph, c: List[int], parent: Optional[int]):
+        this_node = c[0]
+        sub_graph: nx.Graph = origG.subgraph(self.elems)
+        aproxG.add_node(c[0], elems=self.elems, diam=nx.diameter(sub_graph)) # add diameter for sub graphs
+        c[0] += 1
+        if parent is not None:
+            aproxG.add_edge(this_node, parent)
+        if self.children is not None:
+            for child in self.children:
+                child._to_nx_graph_helper(origG, aproxG, c, this_node)
+
+    def to_nx_graph(self, origG: nx.Graph):
+        g = nx.Graph()
+        c = [0]
+        self._to_nx_graph_helper(origG, g, c, None)
+        return g
+
 
 def _create_tree_helper(counter, laminar_family, betas, set, i) -> List[ComTreeNode]:
     ret = []
@@ -46,7 +63,7 @@ def create_tree_from_laminar_family(laminar_family, betas) -> ComTreeNode:
 class TreeApproximator(object):
     def __init__(self, G: nx.Graph):
         self.G = G
-        self.spanning_tree_aprox: ComTreeNode = self._create_spanning_tree_approx()
+        self.spanning_tree_aprox: nx.Graph = self._create_spanning_tree_approx().to_nx_graph(G)
 
     def _distance_dict(self, node_list) -> Dict[int, Dict[int, float]]:
         dict : Dict[int, Dict[int, int]] = {}
