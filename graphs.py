@@ -45,13 +45,27 @@ def load_graph(name):
 
 
 def email_graph():
+    # 1,005   25,571  http://snap.stanford.edu/data/email-Eu-core.html
     return load_graph("email-Eu-core.txt")
 
-def road_graph():
-    return load_graph("roadNet-CA.txt")
+
+def msg_graph():
+    # 1,899  20,296   http://snap.stanford.edu/data/CollegeMsg.html
+    return load_graph("CollegeMsg.txt")
+
 
 def collab_graph():
-    return load_graph("ca-HepTh.txt")
+    # 5,242 14,496    http://snap.stanford.edu/data/ca-GrQc.html
+    return load_graph("ca-GrQc.txt")
+
+
+def p2p_graph():
+    # 6,301   20,777   http://snap.stanford.edu/data/p2p-Gnutella08.html
+    return load_graph("p2p-Gnutella08.txt")
+
+def road_graph():
+    # 1,965,206 2,766,607   http://snap.stanford.edu/data/roadNet-CA.html
+    return load_graph("roadNet-CA.txt")
 
 
 def visualize(g, labels = None):
@@ -64,7 +78,7 @@ def visualize(g, labels = None):
 
 if __name__ == "__main__":
 
-    g = random_graph(10)
+    g = msg_graph()
     visualize(g)
     # g_ = TreeApproximator(g).spanning_tree_aprox
     # dic = {}
