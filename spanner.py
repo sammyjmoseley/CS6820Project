@@ -32,12 +32,13 @@ import matplotlib.pyplot as plt
 
 class Graph_Spanner:
 
-    def __init__(self, graph, alpha=None, beta=None, spanner_func="greedy"):
+    def __init__(self, graph, alpha=None, beta=None, k=2, spanner_func="greedy"):
         self.g = graph
         self.alpha = alpha
         self.beta = beta
+        self.k = k
 
-        self.h = self.greedy_spanner(2)
+        self.h = self.greedy_spanner()
 
     def distance_g(self, u, v):
         try:
@@ -51,8 +52,9 @@ class Graph_Spanner:
         except nx.NetworkXNoPath as e:
             return None
 
-    def greedy_spanner(self, k):
+    def greedy_spanner(self):
         g = self.g
+        k = self.k
         print("start")
         dists = nx.floyd_warshall_numpy(g).tolist()
         print("end")

@@ -82,7 +82,7 @@ class TreeApproximator(object):
         connected_components = list(map(G.subgraph, sorted(nx.connected_components(G), key=len, reverse=True)))
         largest_component = connected_components[0]
         self.G = largest_component
-        self.spanning_tree_aprox: nx.Graph = self._create_spanning_tree_approx().to_nx_graph(G)
+        self.spanning_tree_approx: nx.Graph = self._create_spanning_tree_approx().to_nx_graph(G)
 
     def _distance_dict(self, node_list) -> Dict[int, Dict[int, float]]:
         dict : Dict[int, Dict[int, int]] = {}
