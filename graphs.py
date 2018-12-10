@@ -1,7 +1,9 @@
 import numpy as np
 import networkx as nx
+from networkx.algorithms.bipartite import generators
 from treeApproximation import TreeApproximator, ComTreeNode, create_tree_from_laminar_family
 import matplotlib.pyplot as plt
+
 
 def random_graph(n):
     m = np.random.rand(n,n) > 0.5
@@ -10,6 +12,22 @@ def random_graph(n):
 
 def cycle(n):
     return nx.cycle_graph(n)
+
+
+def vertices(n):
+    return nx.from_numpy_matrix(np.zeros([n,n]))
+
+
+def bipartite(n, m):
+    return generators.random_graph(n, m, 0.2)
+
+
+def grids(n,m):
+    return nx.grid_graph([n,m])
+
+
+def binarytree(h, r = 2):
+    return nx.balanced_tree(r,h)
 
 
 def load_graph(name):
@@ -46,13 +64,13 @@ def visualize(g, labels = None):
 
 if __name__ == "__main__":
 
-    g = email_graph()
+    g = random_graph(10)
     visualize(g)
-    g_ = TreeApproximator(g).spanning_tree_aprox
-    dic = {}
-    for a, b, data in g_.edges(data = True):
-        dic[(a,b)]= data['dist']
-    visualize(g_, labels = dic)
+    # g_ = TreeApproximator(g).spanning_tree_aprox
+    # dic = {}
+    # for a, b, data in g_.edges(data = True):
+    #     dic[(a,b)]= data['dist']
+    # visualize(g_, labels = dic)
     plt.show()
 
 
