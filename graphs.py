@@ -3,6 +3,7 @@ import networkx as nx
 from networkx.algorithms.bipartite import generators
 from treeApproximation import TreeApproximator, ComTreeNode, create_tree_from_laminar_family
 import matplotlib.pyplot as plt
+import sys
 
 
 def random_graph(n):
@@ -74,6 +75,16 @@ def visualize(g, labels = None):
     nx.draw_networkx(g, pos)
     if labels != None:
       nx.draw_networkx_edge_labels(g, pos, labels)
+
+
+def approximation_rate(g, h):
+    d_approx = nx.floyd_warshall_numpy(h).tolist()
+    i, j = np.argmax(d_approx)
+    if nx.has_path(g, i, j):
+        d_real = len(nx.shortest_path(g, i, j))
+    else:
+        raise RuntimeError("Error! path exists in h but not g")
+    return d_approx / d_real
 
 
 if __name__ == "__main__":
