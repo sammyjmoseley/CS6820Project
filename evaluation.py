@@ -93,7 +93,8 @@ def approximation_rate(g, hs, weight = None):
     n = len(g.nodes())
 
     original = nx.floyd_warshall_numpy(g).A
-    d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist=range(len(hs[0].nodes())), weight=weight).A[:n,:n], hs))).mean(axis = 0)
+    d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist=range(len(h.nodes())), weight=weight).A[:n,:n], hs)))
+    d_approx = d_approx.mean(axis = 0)
     # print(d_approx)
     result = [[1 for _ in range(n)] for _ in range(n)]
     for i in range(n):
