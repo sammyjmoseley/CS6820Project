@@ -87,11 +87,36 @@ def get_graphs():
 #			                 Approximation Evaluation							#
 #################################################################################
 
-def approximation_rate(g, hs, mode = "max"):
+def approximation_rate(g, hs, mode = "max", weight = None):
     # avaerge across hs
     n = len(g.nodes())
     original = nx.floyd_warshall_numpy(g).A
-    d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h).A[:n,:n], hs))).mean(axis = 0)
+    if weight != None:
+        d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h,weight).A[:n,:n], hs))).mean(axis = 0)
+    else:
+        d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h).A[:n,:n], hs))).mean(axis = 0)
+    # print(d_approx / original)
+    # print(np.nan_to_num(d_approx / original))
+    result = [[0 for _ in range(n)] for _ in range(n)]
+    print(original)
+    print(d_approx)
+    for i in range(n):
+        for j in range(n):
+            if original[i][j] == 0:
+                if d_approx[i][j] != 0:
+                    result[i][j] = np.inf
+                    print(str(i) + " and " + str(j) + " connected -> disconnected")
+            if original[i][j] == np.inf:
+                if d_approx[i][j] != np.inf:
+                    result[i][j] = np.inf
+                    print(str(i) + " and " + str(j) + " disconnected -> connected")
+            else:
+                result[i][j] = d_approx[i][j] / original[i][j]
+    # plt.figure()
+    # nx.draw_networkx(g)
+    # plt.figure()
+    # nx.draw_networkx(hs[0])
+    # plt.show()
     if mode == "max":
         return np.nan_to_num(d_approx / original).max()
     else:
@@ -101,11 +126,13 @@ def approximation_rate(g, hs, mode = "max"):
 def evaluate_approx(input_graphs):
     result_dict = {}
     for key_g, g in input_graphs.items():
+        weight = None
         if args.mode == 'tree':
             hs = [TreeApproximator(g).spanning_tree_approx for _ in range(args.repeats)]
+            # weight = 'dist'
         if args.mode == 'spanner':
             hs = [Graph_Spanner(g, args.alpha, args.beta, args.k).h]
-        ratio = approximation_rate(g, hs)
+        ratio = approximation_rate(g, hs, weight = weight)
         print(key_g)
         print(ratio)
         result_dict[key_g] = ratio
