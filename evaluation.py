@@ -123,7 +123,7 @@ def approximation_rate(g, hs, weight = None):
     return np.nan_to_num(result).max(), np.nan_to_num(result).mean()
 
 
-def evaluate_approx(input_graphs, runs):
+def evaluate_approx(input_graphs, runs = 1):
     result_dict = {}
     for key_g, g in input_graphs.items():
         weight = None
@@ -156,7 +156,7 @@ def evaluate_runtime():
             if args.mode == 'tree':
                 _ = TreeApproximator(g).spanning_tree_approx
             elif args.mode == 'spanner':
-                _ = Graph_Spanner(g, args.alpha, args.beta, args.k).h
+                _ = Graph_Spanner(g, args.k).h
             else:
                 raise Exception('Invalid mode. ')
             t2 = t.time()
@@ -179,13 +179,14 @@ def plot_eval():
 #################################################################################
 if __name__ == '__main__':
     args = get_args()
-    # input_graphs = get_graphs()
-    # eval_approx = np.array([evaluate_approx(input_graphs, i) for i in [1,10,100]])
+    input_graphs = get_graphs()
+    eval_approx = evaluate_approx(input_graphs)
+    # eval_approx = np.array([evaluate_approx(input_graphs, i) for i in [1]])
     # np.save("approx_result_tree.npy", eval_approx)
 
-    input_graphs = get_graphs()
-    eval_approx = np.array([evaluate_approx(input_graphs, i) for i in range(1,101,10)])
-    np.save("approx_result_tree_more.npy", eval_approx)
+    # input_graphs = get_graphs()
+    # eval_approx = np.array([evaluate_approx(input_graphs, i) for i in range(1,101,10)])
+    # np.save("approx_result_tree_more.npy", eval_approx)
 
     # eval_runtime = evaluate_runtime()
     # np.save("eval_result.npy", eval_runtime)
