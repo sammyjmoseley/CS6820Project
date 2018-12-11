@@ -61,10 +61,21 @@ class Graph_Spanner:
         dists = nx.floyd_warshall(g)
         print("end")
         h = nx.Graph()
+        dists = {}
         for i in g.nodes():
             for j in g.nodes():
-                d = dists[i][j]
-                if (d is not None) and (d > 2 * k - 1):
+
+                # determine d
+                if i in dists:
+                    if j in dists[i]:
+                        d = dists[i][j]
+                    else:
+                        d = np.inf
+
+                else:
+                    d = np.inf
+
+                if d > 2 * k - 1:
                     h.add_edge(i, j)
         return h
 
@@ -92,9 +103,10 @@ if __name__ == "__main__":
     # print("\n")
 
     print("loading cycle graph...")
-    cycle_graph = localGraphs.cycle(500)
+    cycle_graph = localGraphs.cycle(10)
     print("Successfully loaded cycle graph")
-    cycle_spanner = Graph_Spanner(cycle_graph)
+    cycle_spanner = Graph_Spanner(cycle_graph, k=3)
+    print(cycle_spanner.h.nodes())
     print("Finished creating spanner for cycle graph")
 
 
