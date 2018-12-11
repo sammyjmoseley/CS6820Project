@@ -156,7 +156,7 @@ def evaluate_runtime():
             if args.mode == 'tree':
                 _ = TreeApproximator(g).spanning_tree_approx
             elif args.mode == 'spanner':
-                _ = Graph_Spanner(g, args.k).h
+                _ = Graph_Spanner(g, k=args.k).h
             else:
                 raise Exception('Invalid mode. ')
             t2 = t.time()

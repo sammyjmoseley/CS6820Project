@@ -52,6 +52,7 @@ class Graph_Spanner:
         self.k = k
 
         self.h = self.greedy_spanner()
+        print("k: %s" % k)
 
     def distance_g(self, u, v):
         try:
@@ -81,28 +82,37 @@ class Graph_Spanner:
 
             else:
                 for i in component.nodes():
+                    h.add_node(i)
+
+                for i in component.nodes():
                     for j in component.nodes():
+                        if not component.has_edge(i, j):
+                            continue
 
-                        # determine d
-                        if i in dists:
-                            if j in dists[i]:
-                                d = dists[i][j]
-                            else:
-                                d = np.inf
-
-                        elif j in dists:
-                            if i in dists[j]:
-                                d = dists[j][i]
-                            else:
-                                d = np.inf
-                        else:
+                        try:
+                            d = nx.shortest_path_length(h, i, j)
+                        except nx.NetworkXNoPath as e:
                             d = np.inf
+                        # determine d
+                        # if i in dists:
+                        #     if j in dists[i]:
+                        #         d = dists[i][j]
+                        #     else:
+                        #         d = np.inf
+                        #
+                        # elif j in dists:
+                        #     if i in dists[j]:
+                        #         d = dists[j][i]
+                        #     else:
+                        #         d = np.inf
+                        # else:
+                        #     d = np.inf
 
-                        print("d is " + str(d))
+                        # print("d is " + str(d))
                         if d > 2 * k - 1:
-                            print("d valid")
+                            # print("d valid")
                             h.add_edge(i, j)
-                        print("\n")
+                        # print("\n")
         return h
 
     def m_H(self):
