@@ -50,9 +50,10 @@ class ComTreeNode:
             for child in self.children:
                 child._to_nx_graph_helper(orig_dists, aproxG, c, this_node, diam)
 
-    def to_nx_graph(self, orig_dists):
-        g = nx.Graph()
+    def to_nx_graph(self, orig_dists, g):
         c = [len(orig_dists) + 1]
+        if len(g.nodes()) > 0:
+            c[0] = max(c[0], max(g.nodes()) + 1)
         self._to_nx_graph_helper(orig_dists, g, c, None, None)
         return g
 
@@ -83,11 +84,18 @@ class TreeApproximator(object):
     def __init__(self, G: nx.Graph):
         G = G.to_undirected()
         connected_components = list(map(G.subgraph, sorted(nx.connected_components(G), key=len, reverse=True)))
-        largest_component = connected_components[0]
-
-        self.G = largest_component
         self.node_dists = {}
-        self.spanning_tree_approx: nx.Graph = self._create_spanning_tree_approx().to_nx_graph(self.node_dists)
+
+        g = nx.Graph()
+        for comp in connected_components:
+            self.G = comp
+            if len(comp.nodes()) == 1:
+                node = comp.nodes()[0]
+                g.add_node(node, elems=[node], diam=0)
+            else:
+                g = self._create_spanning_tree_approx().to_nx_graph(self.node_dists, g)
+
+        self.spanning_tree_approx: nx.Graph = g
 
     def _distance_dict(self, node_list) -> Dict[int, Dict[int, float]]:
         dict : Dict[int, Dict[int, int]] = {}
