@@ -84,8 +84,6 @@ if __name__ == "__main__":
     g = bipartite(10, 3)
 
     visualize(g)
-    print(nx.floyd_warshall_numpy(g))
-
     g_ = TreeApproximator(g).spanning_tree_approx
     dic = {}
     for a, b, data in g_.edges(data = True):

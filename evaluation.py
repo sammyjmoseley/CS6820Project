@@ -88,14 +88,14 @@ def get_graphs():
 #################################################################################
 
 
-def approximation_rate(g, hs, mode = "max", weight = None):
+def approximation_rate(g, hs, weight = None):
     # avaerge across hs
     n = len(g.nodes())
 
     original = nx.floyd_warshall_numpy(g).A
     d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist=range(len(hs[0].nodes())), weight=weight).A[:n,:n], hs))).mean(axis = 0)
 
-    result = [[0 for _ in range(n)] for _ in range(n)]
+    result = [[1 for _ in range(n)] for _ in range(n)]
     for i in range(n):
         for j in range(n):
             if original[i][j] == 0:
@@ -116,10 +116,10 @@ def approximation_rate(g, hs, mode = "max", weight = None):
     # nx.draw_networkx(hs[0])
     # print(result)
     # plt.show()
-    if mode == "max":
-        return np.nan_to_num(result).max()
-    else:
-        return np.nan_to_num(result).mean()
+    print("minimum distortion should be greater than 1: " + str(np.nan_to_num(result).min()))
+
+
+    return np.nan_to_num(result).max(), np.nan_to_num(result).mean()
 
 
 def evaluate_approx(input_graphs):
@@ -131,12 +131,11 @@ def evaluate_approx(input_graphs):
             weight = 'dist'
         if args.mode == 'spanner':
             hs = [Graph_Spanner(g, args.alpha, args.beta, args.k).h]
-        ratio = approximation_rate(g, hs, weight = weight)
-        print(key_g)
-        print(ratio)
-        result_dict[key_g] = ratio
+        max_ratio, avg_ratio = approximation_rate(g, hs, weight = weight)
+        print("maximum and averge distortion for" + key_g + ": "  + str(max_ratio) +  " " + str(avg_ratio))
+        result_dict[key_g] = [max_ratio, avg_ratio]
 
-    return result_dict
+    return np.array(result_dict)
 
 
 #################################################################################
@@ -147,7 +146,8 @@ def evaluate_runtime():
     # Use loglog plotting
     time_result = []
     for i in range(args.repeats):
-        n = 10 ** (i+1)
+        n = 2 ** (i+1)
+        print(n)
         time_i = []
         for _ in range(args.repeats):
             g = graphs.random_graph(n)
