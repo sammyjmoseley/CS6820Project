@@ -72,7 +72,7 @@ def _get_real():
     """
     assert args.dataset in dataset_names.keys(), 'Invalid dataset keyword. '
 
-    return {args.dataset : load_graph(dataset_names[args.dataset])}
+    return {args.dataset : graphs.load_graph(dataset_names[args.dataset])}
 
 def get_graphs():
     if args.evaluation == 'real':
@@ -94,7 +94,7 @@ def approximation_rate(g, hs, weight = None):
 
     original = nx.floyd_warshall_numpy(g).A
     d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist=range(len(hs[0].nodes())), weight=weight).A[:n,:n], hs))).mean(axis = 0)
-
+    # print(d_approx)
     result = [[1 for _ in range(n)] for _ in range(n)]
     for i in range(n):
         for j in range(n):
@@ -132,7 +132,7 @@ def evaluate_approx(input_graphs):
         if args.mode == 'spanner':
             hs = [Graph_Spanner(g, args.alpha, args.beta, args.k).h]
         max_ratio, avg_ratio = approximation_rate(g, hs, weight = weight)
-        print("maximum and averge distortion for" + key_g + ": "  + str(max_ratio) +  " " + str(avg_ratio))
+        print("maximum and averge distortion for " + key_g + ": "  + str(max_ratio) +  " " + str(avg_ratio))
         result_dict[key_g] = [max_ratio, avg_ratio]
 
     return np.array(result_dict)
