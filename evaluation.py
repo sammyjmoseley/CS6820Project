@@ -1,8 +1,9 @@
-import os 
+import os
 import numpy as np
 import networkx as nx
 from treeApproximation import TreeApproximator, ComTreeNode, create_tree_from_laminar_family
 from spanner import Graph_Spanner
+import graphs
 import matplotlib.pyplot as plt
 import argparse
 
@@ -45,39 +46,39 @@ def get_args():
     parser.add_argument('--seed', type=int, default=6820)
 
 
-    return args
+    return parser.parse_args()
 
 #################################################################################
 #						    Generate/ Load Graphs 								#
 #################################################################################
 def _get_synthetic():
-	"""
-	Return a dict of synthetic graphs for each type of graphs.
-	"""
+    """
+    Return a dict of synthetic graphs for each type of graphs.
+    """
     dict_g = {
-                'random'     : graphs.random_graph(args.n),
-                'cycle'      : graphs.cycle_g(args.n),
-                'vertices'   : graphs.vertices(args.n),
-                'bipartite'  : graphs.bipartite(args.n, args.m),
-                'grids'      : graphs.grids(args.n, args.m),
-                'binarytree' : graphs.binarytree(args.h, args.r)
-              }
-    
+        'random'     : graphs.random_graph(args.n),
+        'cycle'      : graphs.cycle(args.n),
+        'vertices'   : graphs.vertices(args.n),
+        'bipartite'  : graphs.bipartite(args.n, args.m),
+        'grids'      : graphs.grids(args.n, args.m),
+        'binarytree' : graphs.binarytree(args.h, args.r)
+    }
+
     return dict_g
 
 def _get_real():
-	"""
-	Return the real dataset of choice as a graph.
-	"""
+    """
+    Return the real dataset of choice as a graph.
+    """
     assert args.dataset in dataset_names.keys(), 'Invalid dataset keyword. '
-    
+
     return {args.dataset : load_graph(dataset_names[args.dataset])}
 
 def get_graphs():
     if args.evaluation == 'real':
         return _get_real() # Making it a singleton list to match the data type
     elif args.evaluation == 'synthetic':
-        return _get_synthetic() 
+        return _get_synthetic()
     else:
         raise Exception('Invalid evaluation type [--evaluation] must be [real] or [synthetic].')
 
@@ -85,20 +86,30 @@ def get_graphs():
 #################################################################################
 #			                 Approximation Evaluation							#
 #################################################################################
-def evaluate_approx(graphs):
+
+def approximation_rate(g, hs, mode = "max"):
+    # avaerge across hs
+    n = len(g.nodes())
+    original = nx.floyd_warshall_numpy(g).A
+    d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h).A[:n,:n], hs))).mean(axis = 0)
+    if mode == "max":
+        return np.nan_to_num(d_approx / original).max()
+    else:
+        return np.nan_to_num(d_approx / original).mean()
+
+
+def evaluate_approx(input_graphs):
     result_dict = {}
-    for key_g, g in graphs.items():
-        ratio_list = []
-        for _ in range(args.repeats):
-            if args.mode == 'tree':
-                h = TreeApproximator(g).spanning_tree_approx
-            elif args.mode == 'spanner':
-                h = Graph_Spanner(g, args.alpha, args.beta, args.k).h
-            else:
-                raise Exception('Invalid mode. ')
-            ratio_list.append(graphs.approximation_rate(g, h))
-        result_dict[key_g] = np.mean(ratio_list)
-    
+    for key_g, g in input_graphs.items():
+        if args.mode == 'tree':
+            hs = [TreeApproximator(g).spanning_tree_approx for _ in range(args.repeats)]
+        if args.mode == 'spanner':
+            hs = [Graph_Spanner(g, args.alpha, args.beta, args.k).h]
+        ratio = approximation_rate(g, hs)
+        print(key_g)
+        print(ratio)
+        result_dict[key_g] = ratio
+
     return result_dict
 
 
@@ -106,9 +117,9 @@ def evaluate_approx(graphs):
 #			                    Run-time Evaluation								#
 #################################################################################
 import time as t
-def evaluate_runtime(graphs):
+def evaluate_runtime():
     # Use loglog plotting
-    time_dict = {}
+    time_result = []
     for i in range(args.repeats):
         n = 10 ** (i+1)
         time_i = []
@@ -123,9 +134,9 @@ def evaluate_runtime(graphs):
                 raise Exception('Invalid mode. ')
             t2 = t.time()
             time_i.append(t2-t1)
-        time_dict[n] = np.mean(time_i)
-    
-    return time_dict
+        time_result.append([n, np.mean(time_i)])
+
+    return np.array(time_result)
 
 
 #################################################################################
@@ -141,11 +152,12 @@ def plot_eval():
 #################################################################################
 if __name__ == '__main__':
     args = get_args()
-    graphs = get_graphs()
-    eval_approx = evaluate_approx(graphs)
-    eval_runtime = evaluate_runtime(graphs)
-
-    plot_eval()
+    input_graphs = get_graphs()
+    eval_approx = evaluate_approx(input_graphs)
+    np.save("apprx_result.npy", eval_approx)
+    # eval_runtime = evaluate_runtime()
+    np.save("eval_result.npy", eval_runtime)
+    # plot_eval()
 
 
 

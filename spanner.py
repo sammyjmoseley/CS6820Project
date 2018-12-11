@@ -2,6 +2,8 @@ import numpy as np
 import networkx as nx
 from treeApproximation import TreeApproximator
 import matplotlib.pyplot as plt
+import graphs as localGraphs
+import sys
 
 # class T:
 #     def __init__(self, G):
@@ -74,26 +76,24 @@ class Graph_Spanner:
         return self.h.number_of_edges()
 
 
+if __name__ == "__main__":
 
-import graphs as localGraphs
-import sys
+    # print("loading email_graph...")
+    # email_graph = localGraphs.email_graph()
+    # print("successfully loaded email_graph!")
+    # print("Creating spanner")
+    # email_spanner = Graph_Spanner(email_graph)
+    # print("\n")
 
-# print("loading email_graph...")
-# email_graph = localGraphs.email_graph()
-# print("successfully loaded email_graph!")
-# print("Creating spanner")
-# email_spanner = Graph_Spanner(email_graph)
-# print("\n")
+    # print("loading road_graph...")
+    # road_graph =  localGraphs.road_graph()
+    # print("successfully loaded road_graph!")
+    # road_spanner = Graph_Spanner(road_graph)
+    # print("\n")
 
-# print("loading road_graph...")
-# road_graph =  localGraphs.road_graph()
-# print("successfully loaded road_graph!")
-# road_spanner = Graph_Spanner(road_graph)
-# print("\n")
-
-print("loading collab graph...")
-msg_graph = localGraphs.msg_graph()
-print("successfully loaded collab_graph")
-msg_graph = Graph_Spanner(msg_graph)
-print("\n")
+    print("loading collab graph...")
+    msg_graph = localGraphs.msg_graph()
+    print("successfully loaded collab_graph")
+    msg_graph = Graph_Spanner(msg_graph)
+    print("\n")
 

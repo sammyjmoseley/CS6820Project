@@ -118,9 +118,9 @@ class TreeApproximator(object):
         self.node_dists = self._distance_dict(pi)
 
         beta = _beta()
-        print("Beta: %s" % (beta,))
+        # print("Beta: %s" % (beta,))
         diameter = max(map(lambda x: max(x.values()), self.node_dists.values()))
-        print(diameter)
+        # print(diameter)
         delta = np.log2(diameter)
         delta = int(delta)
 
@@ -148,7 +148,7 @@ class TreeApproximator(object):
 
         D = D[i+1:]
         D.reverse()
-        print("Depth of tree %s" % (len(D)))
+        # print("Depth of tree %s" % (len(D)))
         return create_tree_from_laminar_family(D, betas)
 
     def _get_approx_dist(self, a, b):

@@ -77,25 +77,17 @@ def visualize(g, labels = None):
       nx.draw_networkx_edge_labels(g, pos, labels)
 
 
-def approximation_rate(g, h):
-    d_approx = nx.floyd_warshall_numpy(h).tolist()
-    i, j = np.argmax(d_approx)
-    if nx.has_path(g, i, j):
-        d_real = len(nx.shortest_path(g, i, j))
-    else:
-        raise RuntimeError("Error! path exists in h but not g")
-    return d_approx / d_real
-
-
 if __name__ == "__main__":
 
-    g = msg_graph()
+    g = email_graph()
     visualize(g)
-    # g_ = TreeApproximator(g).spanning_tree_aprox
-    # dic = {}
-    # for a, b, data in g_.edges(data = True):
-    #     dic[(a,b)]= data['dist']
-    # visualize(g_, labels = dic)
+    print("loaded")
+    g_ = TreeApproximator(g).spanning_tree_approx
+    dic = {}
+    for a, b, data in g_.edges(data = True):
+        dic[(a,b)]= data['dist']
+    visualize(g_, labels = dic)
+    print(len(g_.nodes()))
     plt.show()
 
 
