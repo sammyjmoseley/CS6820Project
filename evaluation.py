@@ -87,15 +87,13 @@ def get_graphs():
 #			                 Approximation Evaluation							#
 #################################################################################
 
+
 def approximation_rate(g, hs, mode = "max", weight = None):
     # avaerge across hs
     n = len(g.nodes())
-    original = nx.floyd_warshall_numpy(g).A
 
-    if weight != None:
-        d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h,weight).A[:n,:n], hs))).mean(axis = 0)
-    else:
-        d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist = range(len(h.nodes()))).A[:n,:n], hs))).mean(axis = 0)
+    original = nx.floyd_warshall_numpy(g).A
+    d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist=range(len(hs[0].nodes())), weight=weight).A[:n,:n], hs))).mean(axis = 0)
 
     result = [[0 for _ in range(n)] for _ in range(n)]
     for i in range(n):
@@ -130,7 +128,7 @@ def evaluate_approx(input_graphs):
         weight = None
         if args.mode == 'tree':
             hs = [TreeApproximator(g).spanning_tree_approx for _ in range(args.repeats)]
-            # weight = 'dist'
+            weight = 'dist'
         if args.mode == 'spanner':
             hs = [Graph_Spanner(g, args.alpha, args.beta, args.k).h]
         ratio = approximation_rate(g, hs, weight = weight)
