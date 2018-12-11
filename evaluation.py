@@ -92,7 +92,7 @@ def approximation_rate(g, hs, weight = None):
     # avaerge across hs
     n = len(g.nodes())
     # print(len(hs[0].nodes()))
-    original = nx.floyd_warshall_numpy(g).A
+    original = nx.floyd_warshall_numpy(g.to_undirected()).A
     d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist=range(len(h.nodes())), weight=weight).A[:n,:n], hs)))
     d_approx = d_approx.mean(axis = 0)
     # print(d_approx)
@@ -180,16 +180,21 @@ def plot_eval():
 if __name__ == '__main__':
     args = get_args()
     input_graphs = get_graphs()
-    eval_approx = evaluate_approx(input_graphs)
-    # eval_approx = np.array([evaluate_approx(input_graphs, i) for i in [1]])
+    eval_approx = evaluate_approx(input_graphs, args.repeats)
+    np.save("approx_result_tree_p2p.npy", eval_approx)
+
+
+    # input_graphs = get_graphs()
+    # eval_approx = np.array([evaluate_approx(input_graphs, i) for i in [1,10,100]])
     # np.save("approx_result_tree.npy", eval_approx)
+
 
     # input_graphs = get_graphs()
     # eval_approx = np.array([evaluate_approx(input_graphs, i) for i in range(1,101,10)])
     # np.save("approx_result_tree_more.npy", eval_approx)
 
     # eval_runtime = evaluate_runtime()
-    # np.save("eval_result.npy", eval_runtime)
+    # np.save("runtime_result_tree.npy", eval_runtime)
     # plot_eval()
 
 
