@@ -58,7 +58,7 @@ class Graph_Spanner:
         g = self.g
         k = self.k
         print("start")
-        dists = nx.floyd_warshall_numpy(g).tolist()
+        dists = nx.floyd_warshall(g)
         print("end")
         h = nx.Graph()
         for i in g.nodes():
@@ -91,9 +91,17 @@ if __name__ == "__main__":
     # road_spanner = Graph_Spanner(road_graph)
     # print("\n")
 
-    print("loading collab graph...")
-    msg_graph = localGraphs.msg_graph()
-    print("successfully loaded collab_graph")
-    msg_graph = Graph_Spanner(msg_graph)
-    print("\n")
+    print("loading cycle graph...")
+    cycle_graph = localGraphs.cycle(500)
+    print("Successfully loaded cycle graph")
+    cycle_spanner = Graph_Spanner(cycle_graph)
+    print("Finished creating spanner for cycle graph")
+
+
+    # print("loading msg graph...")
+    # msg_graph = localGraphs.msg_graph()
+    # print("successfully loaded msg graph!")
+    # msg_spanner = Graph_Spanner(msg_graph)
+    # print("Finished creating spanner for msg graph")
+    # print("\n")
 
