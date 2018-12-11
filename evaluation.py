@@ -91,36 +91,37 @@ def approximation_rate(g, hs, mode = "max", weight = None):
     # avaerge across hs
     n = len(g.nodes())
     original = nx.floyd_warshall_numpy(g).A
+
     if weight != None:
         d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h,weight).A[:n,:n], hs))).mean(axis = 0)
     else:
-        d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h).A[:n,:n], hs))).mean(axis = 0)
-    # print(d_approx / original)
-    # print(np.nan_to_num(d_approx / original))
+        d_approx = np.array(list(map(lambda h: nx.floyd_warshall_numpy(h, nodelist = range(len(h.nodes()))).A[:n,:n], hs))).mean(axis = 0)
+
     result = [[0 for _ in range(n)] for _ in range(n)]
-    print(original)
-    print(d_approx)
     for i in range(n):
         for j in range(n):
             if original[i][j] == 0:
                 if d_approx[i][j] != 0:
                     result[i][j] = np.inf
                     print(str(i) + " and " + str(j) + " connected -> disconnected")
-            if original[i][j] == np.inf:
+            elif original[i][j] == np.inf:
                 if d_approx[i][j] != np.inf:
                     result[i][j] = np.inf
                     print(str(i) + " and " + str(j) + " disconnected -> connected")
             else:
                 result[i][j] = d_approx[i][j] / original[i][j]
+    # print(original)
+    # print(d_approx)
     # plt.figure()
     # nx.draw_networkx(g)
     # plt.figure()
     # nx.draw_networkx(hs[0])
+    # print(result)
     # plt.show()
     if mode == "max":
-        return np.nan_to_num(d_approx / original).max()
+        return np.nan_to_num(result).max()
     else:
-        return np.nan_to_num(d_approx / original).mean()
+        return np.nan_to_num(result).mean()
 
 
 def evaluate_approx(input_graphs):
@@ -183,7 +184,7 @@ if __name__ == '__main__':
     eval_approx = evaluate_approx(input_graphs)
     np.save("apprx_result.npy", eval_approx)
     # eval_runtime = evaluate_runtime()
-    np.save("eval_result.npy", eval_runtime)
+    # np.save("eval_result.npy", eval_runtime)
     # plot_eval()
 
 

@@ -50,8 +50,8 @@ class ComTreeNode:
             for child in self.children:
                 child._to_nx_graph_helper(orig_dists, aproxG, c, this_node, diam)
 
-    def to_nx_graph(self, orig_dists, g):
-        c = [len(orig_dists) + 1]
+    def to_nx_graph(self, n, orig_dists, g):
+        c = [n]
         if len(g.nodes()) > 0:
             c[0] = max(c[0], max(g.nodes()) + 1)
         self._to_nx_graph_helper(orig_dists, g, c, None, None)
@@ -93,7 +93,7 @@ class TreeApproximator(object):
                 node = comp.nodes()[0]
                 g.add_node(node, elems=[node], diam=0)
             else:
-                g = self._create_spanning_tree_approx().to_nx_graph(self.node_dists, g)
+                g = self._create_spanning_tree_approx().to_nx_graph(len(G.nodes()),self.node_dists, g)
 
         self.spanning_tree_approx: nx.Graph = g
 
@@ -122,28 +122,31 @@ class TreeApproximator(object):
         diameter = max(map(lambda x: max(x.values()), self.node_dists.values()))
         # print(diameter)
         delta = np.log2(diameter)
-        delta = int(delta)
+        delta = int(delta) + 1
 
         D = [[] for _ in range(0, delta+1)]
         betas = []
 
         i = delta-1
-
         D[i+1] = [pi]
         betas.append(np.power(2.0, delta) * beta)
         while max(map(len, D[i+1])) > 1:
             beta_i = np.power(2.0, i-1) * beta
             betas.append(beta_i)
             nodes = []
+
             for l in range(0, len(pi)):
                 for cluster in D[i+1]:
-                    append_nodes = filter(lambda x: x not in nodes, cluster)
-                    append_nodes = list(append_nodes)
-                    append_nodes = filter(lambda x: self.node_dists[x][pi[l]] < beta_i, append_nodes)
-                    append_nodes = list(append_nodes)
-                    nodes.extend(append_nodes)
-                    D[i].append(append_nodes)
+                    if cluster != [] :
+                        append_nodes = filter(lambda x: x not in nodes, cluster)
+                        append_nodes = list(append_nodes)
+                        append_nodes = filter(lambda x: self.node_dists[x][pi[l]] < beta_i, append_nodes)
+                        append_nodes = list(append_nodes)
+                        nodes.extend(append_nodes)
+                        D[i].append(append_nodes)
+
             i -= 1
+
 
 
         D = D[i+1:]

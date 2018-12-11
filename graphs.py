@@ -24,7 +24,9 @@ def bipartite(n, m):
 
 
 def grids(n,m):
-    return nx.grid_graph([n,m])
+    def mapping(x):
+        return x[0]*m + x[1]
+    return nx.relabel_nodes(nx.grid_graph([n,m]), mapping)
 
 
 def binarytree(h, r = 2):
@@ -79,9 +81,11 @@ def visualize(g, labels = None):
 
 if __name__ == "__main__":
 
-    g = email_graph()
+    g = bipartite(10, 3)
+
     visualize(g)
-    print("loaded")
+    print(nx.floyd_warshall_numpy(g))
+
     g_ = TreeApproximator(g).spanning_tree_approx
     dic = {}
     for a, b, data in g_.edges(data = True):
