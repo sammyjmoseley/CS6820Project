@@ -1,1 +1,8 @@
-python3 evaluation.py --evaluation=synthetic --repeats=10 --mode=tree --n=10 --m=3 --h=3 --r=2
+# approx synthetic
+python3 evaluation.py --evaluation=synthetic --repeats=1 --mode=tree --n=20 --m=10 --h=5 --r=2
+
+# approx real
+python3 evaluation.py --evaluation=real --dataset=email --repeats=1 --mode=tree
+
+# approx runtime
+python3 evaluation.py --repeats=9  --mode=tree
