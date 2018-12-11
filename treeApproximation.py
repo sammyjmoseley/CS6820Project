@@ -90,7 +90,7 @@ class TreeApproximator(object):
         for comp in connected_components:
             self.G = comp
             if len(comp.nodes()) == 1:
-                node = comp.nodes()[0]
+                node = list(comp.nodes())[0]
                 g.add_node(node, elems=[node], diam=0)
             else:
                 g = self._create_spanning_tree_approx().to_nx_graph(len(G.nodes()),self.node_dists, g)
