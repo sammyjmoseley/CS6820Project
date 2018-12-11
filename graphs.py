@@ -81,7 +81,7 @@ def visualize(g, labels = None):
 
 if __name__ == "__main__":
 
-    g = bipartite(10, 3)
+    g = email_graph()
 
     visualize(g)
     g_ = TreeApproximator(g).spanning_tree_approx
