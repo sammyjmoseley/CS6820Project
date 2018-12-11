@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 import random
 from typing import Dict, Optional, List
-
+import matplotlib.pyplot as plt
 
 def _beta_bad():
     l_2 = np.log2(2)
@@ -34,46 +34,49 @@ class ComTreeNode:
     def is_leaf(self) -> bool:
         return self.children is None
 
-    def _to_nx_graph_helper(self, origG: nx.Graph, aproxG: nx.Graph, c: List[int], parent: Optional[int]):
+    def _to_nx_graph_helper(self, orig_dists, aproxG: nx.Graph, c: List[int], parent: Optional[int], parent_diam):
         this_node = c[0]
-        diam = 1
-        if origG is not None:
-            sub_graph: nx.Graph = origG.subgraph(self.elems)
-            diam = nx.diameter(sub_graph)
-        aproxG.add_node(c[0], elems=self.elems, diam=diam) # add diameter for sub graphs
-        c[0] += 1
+        if len(self.elems) == 1:
+            this_node = self.elems[0]
+        else:
+            c[0] += 1
+
+        diam = max(map(lambda dic: max(map(lambda e: dic[e], self.elems)), map(lambda e: orig_dists[e], self.elems)))
+        aproxG.add_node(this_node, elems=self.elems, diam=diam) # add diameter for sub graphs
+
         if parent is not None:
-            idx, attrs = aproxG.nodes(data = True)[parent]
-            aproxG.add_edge(this_node, parent, dist = attrs['diam'])
+            aproxG.add_edge(this_node, parent, dist = parent_diam)
         if self.children is not None:
             for child in self.children:
-                child._to_nx_graph_helper(origG, aproxG, c, this_node)
+                child._to_nx_graph_helper(orig_dists, aproxG, c, this_node, diam)
 
-    def to_nx_graph(self, origG: nx.Graph=None):
+    def to_nx_graph(self, orig_dists):
         g = nx.Graph()
-        c = [0]
-        self._to_nx_graph_helper(origG, g, c, None)
+        c = [len(orig_dists) + 1]
+        self._to_nx_graph_helper(orig_dists, g, c, None, None)
         return g
 
 
-def _create_tree_helper(counter, laminar_family, betas, set, i) -> List[ComTreeNode]:
+def _create_tree_helper(laminar_family, betas, set, i) -> List[ComTreeNode]:
     ret = []
+    j = 0
     if i == len(laminar_family) - 1:
-        while counter[i] < len(laminar_family[i]) and laminar_family[i][counter[i]][0] in set:
-            ret.append(ComTreeNode(laminar_family[i][counter[i]], betas[i]))
-            counter[i] += 1
+        while j < len(laminar_family[i]):
+            if len(laminar_family[i][j]) > 0 and laminar_family[i][j][0] in set:
+                ret.append(ComTreeNode(laminar_family[i][j], betas[i]))
+            j += 1
     else:
         ret = []
-        while counter[i] < len(laminar_family[i]) and laminar_family[i][counter[i]][0] in set:
-            new_nodes = _create_tree_helper(counter, laminar_family, betas, laminar_family[i][counter[i]], i + 1)
-            ret.append(ComTreeNode(laminar_family[i][counter[i]], betas[i], new_nodes))
-            counter[i] += 1
+        while j < len(laminar_family[i]):
+            if len(laminar_family[i][j]) > 0 and laminar_family[i][j][0] in set:
+                new_nodes = _create_tree_helper(laminar_family, betas, laminar_family[i][j], i + 1)
+                ret.append(ComTreeNode(laminar_family[i][j], betas[i], new_nodes))
+            j += 1
     return ret
 
 
 def create_tree_from_laminar_family(laminar_family, betas) -> ComTreeNode:
-    counter = [0 for _ in range(len(laminar_family))]
-    return _create_tree_helper(counter, laminar_family, betas, laminar_family[-1][0], 0)[0]
+    return ComTreeNode(laminar_family[0][0], betas[0], _create_tree_helper(laminar_family, betas, laminar_family[0][0], 1))
 
 
 class TreeApproximator(object):
@@ -81,8 +84,10 @@ class TreeApproximator(object):
         G = G.to_undirected()
         connected_components = list(map(G.subgraph, sorted(nx.connected_components(G), key=len, reverse=True)))
         largest_component = connected_components[0]
+
         self.G = largest_component
-        self.spanning_tree_approx: nx.Graph = self._create_spanning_tree_approx().to_nx_graph(G)
+        self.node_dists = {}
+        self.spanning_tree_approx: nx.Graph = self._create_spanning_tree_approx().to_nx_graph(self.node_dists)
 
     def _distance_dict(self, node_list) -> Dict[int, Dict[int, float]]:
         dict : Dict[int, Dict[int, int]] = {}
@@ -102,11 +107,11 @@ class TreeApproximator(object):
     def _create_spanning_tree_approx(self) -> ComTreeNode:
         pi = list(self.G.nodes())
         random.shuffle(pi)
-        node_dists = self._distance_dict(pi)
+        self.node_dists = self._distance_dict(pi)
 
         beta = _beta()
         print("Beta: %s" % (beta,))
-        diameter = max(map(lambda x: max(x.values()), node_dists.values()))
+        diameter = max(map(lambda x: max(x.values()), self.node_dists.values()))
         print(diameter)
         delta = np.log2(diameter)
         delta = int(delta)
@@ -126,13 +131,13 @@ class TreeApproximator(object):
                 for cluster in D[i+1]:
                     append_nodes = filter(lambda x: x not in nodes, cluster)
                     append_nodes = list(append_nodes)
-                    append_nodes = filter(lambda x: node_dists[x][pi[l]] < beta_i, append_nodes)
+                    append_nodes = filter(lambda x: self.node_dists[x][pi[l]] < beta_i, append_nodes)
                     append_nodes = list(append_nodes)
                     nodes.extend(append_nodes)
-
                     D[i].append(append_nodes)
-
             i -= 1
+
+
         D = D[i+1:]
         D.reverse()
         print("Depth of tree %s" % (len(D)))
