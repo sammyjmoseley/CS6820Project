@@ -32,6 +32,17 @@ import sys
 #         return str(self.table)
 
 
+
+
+
+#             if len(comp.nodes()) == 1:
+#                 node = list(comp.nodes())[0]
+#                 g.add_node(node, elems=[node], diam=0)
+#             else:
+#                 g = self._create_spanning_tree_approx().to_nx_graph(len(G.nodes()),self.node_dists, g)
+#
+#         self.spanning_tree_approx: nx.Graph = g
+
 class Graph_Spanner:
 
     def __init__(self, graph, alpha=None, beta=None, k=2, spanner_func="greedy"):
@@ -55,28 +66,43 @@ class Graph_Spanner:
             return None
 
     def greedy_spanner(self):
-        g = self.g
+        g = self.g.to_undirected()
+        connected_components = list(map(g.subgraph, sorted(nx.connected_components(g), key=len, reverse=True)))
+
         k = self.k
-        print("start")
-        dists = nx.floyd_warshall(g)
-        print("end")
         h = nx.Graph()
         dists = {}
-        for i in g.nodes():
-            for j in g.nodes():
 
-                # determine d
-                if i in dists:
-                    if j in dists[i]:
-                        d = dists[i][j]
-                    else:
-                        d = np.inf
+        for component in connected_components:
 
-                else:
-                    d = np.inf
+            if len(component.nodes()) == 1:
+                node = list(component.nodes())[0]
+                h.add_node(node, elems=[node], diam=0)
 
-                if d > 2 * k - 1:
-                    h.add_edge(i, j)
+            else:
+                for i in component.nodes():
+                    for j in component.nodes():
+
+                        # determine d
+                        if i in dists:
+                            if j in dists[i]:
+                                d = dists[i][j]
+                            else:
+                                d = np.inf
+
+                        elif j in dists:
+                            if i in dists[j]:
+                                d = dists[j][i]
+                            else:
+                                d = np.inf
+                        else:
+                            d = np.inf
+
+                        print("d is " + str(d))
+                        if d > 2 * k - 1:
+                            print("d valid")
+                            h.add_edge(i, j)
+                        print("\n")
         return h
 
     def m_H(self):
@@ -107,6 +133,7 @@ if __name__ == "__main__":
     print("Successfully loaded cycle graph")
     cycle_spanner = Graph_Spanner(cycle_graph, k=3)
     print(cycle_spanner.h.nodes())
+    print(cycle_spanner.h.edges())
     print("Finished creating spanner for cycle graph")
 
 
