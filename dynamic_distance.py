@@ -22,6 +22,12 @@ class DynamicDistance(object):
 
     def add_edge(self, a, b):
         self.g.add_edge(a, b)
+        if a not in self.distances:
+            self.distances[a] = {}
+
+        if b not in self.distances:
+            self.distances[b] = {}
+        
         self.distances[a][b] = 1
         self.distances[b][a] = 1
         nodes_visited = [a, b]
