@@ -43,6 +43,6 @@ class DynamicDistance(object):
                     self._update_distance(nodes_changed, n1, n2)
 
     def get_distance(self, n1, n2):
-        if n1 in self.distances and n2 in self.distances[n2]:
+        if n1 in self.distances and n2 in self.distances[n1]:
             return self.distances[n1][n2]
         return np.inf

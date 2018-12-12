@@ -4,44 +4,8 @@ from treeApproximation import TreeApproximator
 import matplotlib.pyplot as plt
 import graphs as localGraphs
 import sys
+import dynamic_distance
 
-# class T:
-#     def __init__(self, G):
-#         nodes = G.nodes()
-#         edges = G.edges()
-#         n = len(nodes)
-#         m = len(edges)
-#         self.table = self._create_table(n, edges)
-
-
-#     def _create_table(self, n, edges):
-#         table = np.zeros((n,n))
-#         for edge, _ in edges.items():
-#             source_id = edge[0]
-#             target_id = edge[1]
-
-#             table[source_id][target_id] = 1
-#             table[target_id][source_id] = 1
-#         return table
-
-#     def produce_spanner(self):
-#         h = nx.from_numpy_matrix(self.table)
-#         return h
-
-#     def __str__(self):
-#         return str(self.table)
-
-
-
-
-
-#             if len(comp.nodes()) == 1:
-#                 node = list(comp.nodes())[0]
-#                 g.add_node(node, elems=[node], diam=0)
-#             else:
-#                 g = self._create_spanning_tree_approx().to_nx_graph(len(G.nodes()),self.node_dists, g)
-#
-#         self.spanning_tree_approx: nx.Graph = g
 
 class Graph_Spanner:
 
@@ -72,7 +36,7 @@ class Graph_Spanner:
 
         k = self.k
         h = nx.Graph()
-        dists = {}
+        h_dists = dynamic_distance.DynamicDistance(h)
 
         for component in connected_components:
 
@@ -81,6 +45,7 @@ class Graph_Spanner:
                 h.add_node(node, elems=[node], diam=0)
 
             else:
+
                 for i in component.nodes():
                     h.add_node(i)
 
@@ -89,30 +54,15 @@ class Graph_Spanner:
                         if not component.has_edge(i, j):
                             continue
 
-                        try:
-                            d = nx.shortest_path_length(h, i, j)
-                        except nx.NetworkXNoPath as e:
-                            d = np.inf
-                        # determine d
-                        # if i in dists:
-                        #     if j in dists[i]:
-                        #         d = dists[i][j]
-                        #     else:
-                        #         d = np.inf
-                        #
-                        # elif j in dists:
-                        #     if i in dists[j]:
-                        #         d = dists[j][i]
-                        #     else:
-                        #         d = np.inf
-                        # else:
+                        # try:
+                        #     d = nx.shortest_path_length(h, i, j)
+                        # except nx.NetworkXNoPath as e:
                         #     d = np.inf
 
-                        # print("d is " + str(d))
+                        d = h_dists.get_distance(i, j)
+
                         if d > 2 * k - 1:
-                            # print("d valid")
-                            h.add_edge(i, j)
-                        # print("\n")
+                            h_dists.add_edge(i, j)
         return h
 
     def m_H(self):
