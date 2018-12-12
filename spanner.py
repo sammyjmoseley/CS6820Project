@@ -4,6 +4,7 @@ from treeApproximation import TreeApproximator
 import matplotlib.pyplot as plt
 import graphs as localGraphs
 import sys
+import tqdm
 import dynamic_distance
 
 
@@ -38,6 +39,12 @@ class Graph_Spanner:
         h = nx.Graph()
         h_dists = dynamic_distance.DynamicDistance(h)
 
+        total = map(len, connected_components)
+        total = map(lambda x: x**2, total)
+        total = sum(total)
+
+        pbar = tqdm.tqdm(total=total)
+
         for component in connected_components:
 
             if len(component.nodes()) == 1:
@@ -51,6 +58,7 @@ class Graph_Spanner:
 
                 for i in component.nodes():
                     for j in component.nodes():
+                        pbar.update(1)
                         if not component.has_edge(i, j):
                             continue
 
@@ -63,6 +71,7 @@ class Graph_Spanner:
 
                         if d > 2 * k - 1:
                             h_dists.add_edge(i, j)
+        pbar.close()
         return h
 
     def m_H(self):
