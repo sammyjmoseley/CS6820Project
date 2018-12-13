@@ -36,6 +36,7 @@ def get_args():
     parser.add_argument('--mode', type=str, help='[tree] or [spanner]')
     parser.add_argument('--alpha', type=str)
     parser.add_argument('--beta', type=str)
+    parser.add_argument('--scale', type=int, default=10)
     parser.add_argument('--n', type=int)
     parser.add_argument('--m', type=int)
     parser.add_argument('--h', type=int)
@@ -109,7 +110,7 @@ import time as t
 def evaluate_runtime(graphs):
     # Use loglog plotting
     time_dict = {}
-    for i in range(args.repeats):
+    for i in range(args.scale):
         n = 10 ** (i+1)
         time_i = []
         for _ in range(args.repeats):
@@ -142,6 +143,10 @@ def plot_eval():
 if __name__ == '__main__':
     args = get_args()
     graphs = get_graphs()
+
+    # Dictionary of results 
+    #   approx : keys = name of the graph / values = mean approx. rate over repeats 
+    #   runtime: keys = n / values = mean run time 
     eval_approx = evaluate_approx(graphs)
     eval_runtime = evaluate_runtime(graphs)
 
