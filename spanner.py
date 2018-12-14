@@ -68,7 +68,6 @@ class Graph_Spanner:
                         #     d = np.inf
 
                         d = h_dists.get_distance(i, j)
-
                         if d > 2 * k - 1:
                             h_dists.add_edge(i, j)
         pbar.close()

@@ -19,11 +19,15 @@ def vertices(n):
     return nx.from_numpy_matrix(np.zeros([n,n]))
 
 
-def bipartite(n, m):
+def bipartite(n, m=None):
+    if not m:
+        m = n
     return generators.random_graph(n, m, 0.2)
 
 
-def grids(n,m):
+def grids(n,m=None):
+    if not m:
+        m = n
     def mapping(x):
         return x[0]*m + x[1]
     return nx.relabel_nodes(nx.grid_graph([n,m]), mapping)
