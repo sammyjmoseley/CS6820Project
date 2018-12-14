@@ -254,16 +254,18 @@ def _plot_approx(result_dict):
     plt.show()
 
 def factor_analysis():
-    assert args.factor_analysis == 'False', 'Wrong argument for factor analysis mode. '
+    assert args.factor_analysis == 'True', 'Wrong argument for factor analysis mode. '
     N_list = [10, 50, 100, 500, 1000]
     k_list = [2, 3, 4, 5, 10]
 
+    dict_list = []
     if args.mode == 'tree':
         """
         We analyze varying N 
         """
+        txt=''
         var = 'N'
-        mylist = N_list
+        my_list = N_list
         for n in my_list:
             args.n = n 
             result_dict = evaluate_approx(get_graphs())
@@ -273,14 +275,16 @@ def factor_analysis():
         """
         We analyze varying k
         """
+        args.n = 1000 # Change as you wish
+        txt = '(N={})'.format(args.n)
         var = 'k'
+        
         my_list = k_list 
         for k in my_list:
             args.k = k
             result_dict = evaluate_approx(get_graphs())
             dict_list.append(result_dict)
     
-    dict_list = []
     labels = []
     max_dict = {key: [] for key in args.dataset_list}
     avg_dict = {key: [] for key in args.dataset_list}
@@ -289,26 +293,57 @@ def factor_analysis():
         lbl = '{}={}'.format(var, my_list[idx])
         labels.append(lbl)
 
-        for key_g, value_g in result_dict:
+        for key_g, value_g in result_dict.items():
             _, (max_list, avg_list) = value_g
             max_dict[key_g].append(max_list)
             avg_dict[key_g].append(avg_list)
 
-        for key in args.dataset_list:
-            plt.subplot(121)
-            plt.boxplot(max_dict[key], labels=label)
-            plt.title('Box-plot of {} max-rate with {} graph.'.format(args.mode, key))
-            plt.grid(linewidth=0.2)
-            plt.ylabel('Approximation Rate')
-            plt.savefig('Approximation rate {} box-plot with {}.png'.format(args.mode, key))
 
-            plt.subplot(122)
-            plt.boxplot(avg_dict[key], labels=label)
-            plt.title('Box-plot of {} avg-rate with {} graph.'.format(args.mode, key))
-            plt.grid(linewidth=0.2)
-            plt.ylabel('Approximation Rate')
-            plt.savefig('img/Approximation rate {} box-plot with {}.png'.format(args.mode, key))
-            plt.show()
+    for key in args.dataset_list:
+        max_means = np.array(max_dict[key]).mean(axis=1).flatten()
+        print(max_means)
+        max_stds = np.array(max_dict[key]).std(axis=1).flatten()
+
+        avg_means = np.array(avg_dict[key]).mean(axis=1).flatten()
+        avg_stds = np.array(max_dict[key]).std(axis=1).flatten()
+
+        ind = np.arange(len(max_means))
+        width = 0.35
+
+        fig, ax = plt.subplots()
+        rects1 = ax.bar(ind - width/2, max_means, width, yerr=max_stds,
+                        color='SkyBlue', label='Maximum distortion')
+        rects2 = ax.bar(ind + width/2, avg_means, width, yerr=avg_stds,
+                        color='IndianRed', label='Mean distortion')
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Approximation Rate')
+        ax.set_title('Maximum and average distortion rates of {} per different {} {}'.format(args.mode, var, txt))
+        ax.set_xticks(ind)
+        ax.set_xticklabels(labels)
+        ax.legend()
+
+        def autolabel(rects, xpos='center'):
+            """
+            Attach a text label above each bar in *rects*, displaying its height.
+
+            *xpos* indicates which side to place the text w.r.t. the center of
+            the bar. It can be one of the following {'center', 'right', 'left'}.
+            """
+
+            xpos = xpos.lower()  # normalize the case of the parameter
+            ha = {'center': 'center', 'right': 'left', 'left': 'right'}
+            offset = {'center': 0.5, 'right': 0.57, 'left': 0.43}  # x_txt = x + w*off
+
+            for rect in rects:
+                height = rect.get_height()
+                ax.text(rect.get_x() + rect.get_width()*offset[xpos], 1.01*height,
+                        '{}'.format(height), ha=ha[xpos], va='bottom')
+
+        autolabel(rects1, "left")
+        autolabel(rects2, "right")
+
+        plt.show()
 
     return dict_list
 
@@ -359,12 +394,13 @@ if __name__ == '__main__':
     
     logging.info('Start evaluation program [details: {}].'.format(details))
 
-    # Create graphs 
-    logging.info('Creating {} graphs {}.'.format(args.evaluation, args.dataset_list))
-    input_graphs = get_graphs()
-    logging.info('- Done.')
+    
 
     if args.factor_analysis == 'False':
+        # Create graphs 
+        logging.info('Creating {} graphs {}.'.format(args.evaluation, args.dataset_list))
+        input_graphs = get_graphs()
+        logging.info('- Done.')
         if args.eval_type == 'approx':
             # Evaluate approximation rate 
             logging.info('Begin approximation rate evaluation.')
@@ -384,7 +420,7 @@ if __name__ == '__main__':
         logging.info('- Done.')
 
     elif args.factor_analysis == 'True':
-        ogging.info('Begin factor analysis evaluation.')
+        logging.info('Begin factor analysis evaluation.')
         evaluation = factor_analysis()      
         logging.info('- Done.')
     
