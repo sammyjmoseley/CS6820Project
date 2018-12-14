@@ -56,6 +56,7 @@ def get_args():
     parser.add_argument('--r', dest='repeats', type=int, default=10)
     parser.add_argument('--s', dest='seed', type=int, default=6820)
     # parser.add_argument('--am', dest='approx_mode', type=str, default='max', help='[max] or [avg]')
+    parser.add_argument('--fa', dest='factor_analysis', type=str, default='False')
 
     return parser.parse_args()
 
@@ -252,6 +253,66 @@ def _plot_approx(result_dict):
     plt.savefig('img/Approximation rate box-plot.png')
     plt.show()
 
+def factor_analysis():
+    assert args.factor_analysis == 'False', 'Wrong argument for factor analysis mode. '
+    N_list = [10, 50, 100, 500, 1000]
+    k_list = [2, 3, 4, 5, 10]
+
+    if args.mode == 'tree':
+        """
+        We analyze varying N 
+        """
+        var = 'N'
+        mylist = N_list
+        for n in my_list:
+            args.n = n 
+            result_dict = evaluate_approx(get_graphs())
+            dict_list.append(result_dict)
+
+    elif args.mode == 'spanner':
+        """
+        We analyze varying k
+        """
+        var = 'k'
+        my_list = k_list 
+        for k in my_list:
+            args.k = k
+            result_dict = evaluate_approx(get_graphs())
+            dict_list.append(result_dict)
+    
+    dict_list = []
+    labels = []
+    max_dict = {key: [] for key in args.dataset_list}
+    avg_dict = {key: [] for key in args.dataset_list}
+    
+    for idx, result_dict in enumerate(dict_list):
+        lbl = '{}={}'.format(var, my_list[idx])
+        labels.append(lbl)
+
+        for key_g, value_g in result_dict:
+            _, (max_list, avg_list) = value_g
+            max_dict[key_g].append(max_list)
+            avg_dict[key_g].append(avg_list)
+
+        for key in args.dataset_list:
+            plt.subplot(121)
+            plt.boxplot(max_dict[key], labels=label)
+            plt.title('Box-plot of {} max-rate with {} graph.'.format(args.mode, key))
+            plt.grid(linewidth=0.2)
+            plt.ylabel('Approximation Rate')
+            plt.savefig('Approximation rate {} box-plot with {}.png'.format(args.mode, key))
+
+            plt.subplot(122)
+            plt.boxplot(avg_dict[key], labels=label)
+            plt.title('Box-plot of {} avg-rate with {} graph.'.format(args.mode, key))
+            plt.grid(linewidth=0.2)
+            plt.ylabel('Approximation Rate')
+            plt.savefig('img/Approximation rate {} box-plot with {}.png'.format(args.mode, key))
+            plt.show()
+
+    return dict_list
+
+
 def _plot_runtime(result_dict):
     for key_g, value_g in result_dict.items():
         (mean, full) = value_g
@@ -303,24 +364,29 @@ if __name__ == '__main__':
     input_graphs = get_graphs()
     logging.info('- Done.')
 
-    if args.eval_type == 'approx':
-        # Evaluate approximation rate 
-        logging.info('Begin approximation rate evaluation.')
-        evaluation = evaluate_approx(input_graphs)
+    if args.factor_analysis == 'False':
+        if args.eval_type == 'approx':
+            # Evaluate approximation rate 
+            logging.info('Begin approximation rate evaluation.')
+            evaluation = evaluate_approx(input_graphs)
+            logging.info('- Done.')
+        elif args.eval_type == 'runtime':
+            # Evaluate runtime  
+            logging.info('Begin runtime evaluation.')
+            evaluation = evaluate_runtime()
+            logging.info('- Done.') 
+        else: 
+            raise Exception('Wrong evaluation type. ')
+
+        # Visualization# Evaluate approximation rate 
+        logging.info('Begin plotting the results.')
+        plot(evaluation)
         logging.info('- Done.')
-    elif args.eval_type == 'runtime':
-        # Evaluate runtime  
-        logging.info('Begin runtime evaluation.')
-        evaluation = evaluate_runtime()
-        logging.info('- Done.') 
-    else: 
-        raise Exception('Wrong evaluation type. ')
 
-    # Visualization# Evaluate approximation rate 
-    logging.info('Begin plotting the results.')
-    plot(evaluation)
-    logging.info('- Done.')
-
+    elif args.factor_analysis == 'True':
+        ogging.info('Begin factor analysis evaluation.')
+        evaluation = factor_analysis()      
+        logging.info('- Done.')
     
     logging.info('Saving results.') 
     import pickle as pk
