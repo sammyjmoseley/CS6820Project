@@ -37,7 +37,8 @@ class Graph_Spanner:
 
         k = self.k
         h = nx.Graph()
-        h_dists = dynamic_distance.DynamicDistance(h)
+        dists = {}
+        # h_dists = dynamic_distance.DynamicDistance(h)
 
         total = map(len, connected_components)
         total = map(lambda x: x**2, total)
@@ -52,24 +53,32 @@ class Graph_Spanner:
                 h.add_node(node, elems=[node], diam=0)
 
             else:
-
                 for i in component.nodes():
                     h.add_node(i)
 
-                for i in component.nodes():
-                    for j in component.nodes():
-                        pbar.update(1)
-                        if not component.has_edge(i, j):
-                            continue
+                for (i, j) in component.edges():
 
-                        # try:
-                        #     d = nx.shortest_path_length(h, i, j)
-                        # except nx.NetworkXNoPath as e:
-                        #     d = np.inf
+                    try:
+                        d = nx.shortest_path_length(h, i, j)
+                    except nx.NetworkXNoPath as e:
+                        d = np.inf
+                    if d > 2 * k - 1:
+                            h.add_edge(i, j)
 
-                        d = h_dists.get_distance(i, j)
-                        if d > 2 * k - 1:
-                            h_dists.add_edge(i, j)
+                # for i in component.nodes():
+                #     for j in component.nodes():
+                #         pbar.update(1)
+                #         if not component.has_edge(i, j):
+                #             continue
+
+                #         try:
+                #             d = nx.shortest_path_length(h, i, j)
+                #         except nx.NetworkXNoPath as e:
+                #             d = np.inf
+
+                #         # d = h_dists.get_distance(i, j)
+                #         if d > 2 * k - 1:
+                #             h.add_edge(i, j)
         pbar.close()
         return h
 
